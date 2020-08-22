@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Modules
+namespace konlulu_grab.Modules
 {
     [Name(DiscordModule.MODULE_NAME)]
     [Summary(DiscordModule.MODULE_DESCRIPTION)]
@@ -26,6 +26,7 @@ namespace DiscordBot.Modules
         public DiscordModule(ILogger<DiscordModule> logger)
         {
             this.logger = logger;
+            logger.LogInformation("created");
         }
 
         protected override void BeforeExecute(CommandInfo command)
@@ -37,7 +38,17 @@ namespace DiscordBot.Modules
         [Summary("Get help")]
         public Task PrintHelpAsync()
         {
+            logger.LogInformation(DiscordModule.HELP_STRING);
             return base.ReplyAsync(DiscordModule.HELP_STRING);
+        }
+
+        [Command("me")]
+        [Summary("get me")]
+        public Task GetUserAsync()
+        {
+            var user = this.Context.User;
+            var avatar = user.GetAvatarUrl(Discord.ImageFormat.Png);
+            return base.ReplyAsync(avatar);
         }
 
         private SocketUser GetUserFromContext()

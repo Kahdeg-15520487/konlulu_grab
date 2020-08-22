@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Discord.Commands;
+using Discord.WebSocket;
+
+using konlulu_grab.BackgroundServices;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,12 +12,12 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DiscordBot
+namespace konlulu_grab
 {
     class Program
     {
 
-        public static readonly string APPLICATION_NAME = "discord_bot";
+        public static readonly string APPLICATION_NAME = "konlulu_grab";
 
         public static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
@@ -48,7 +53,12 @@ namespace DiscordBot
             configuration = LoadConfiguration();
 
             services.AddSingleton<IConfiguration>(configuration)
-                    .AddHttpClient();
+                    .AddHttpClient()
+                    .AddSingleton<DiscordSocketClient>()
+                    .AddSingleton<CommandService>()
+                    .AddSingleton<CommandHandler>()
+
+                    .AddHostedService<DiscordHandlerHostedService>();
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Loaded service: ");
@@ -56,6 +66,7 @@ namespace DiscordBot
             {
                 sb.AppendLine($"Service: {service.ServiceType.FullName}\n      Lifetime: {service.Lifetime}\n      Instance: {service.ImplementationType?.FullName}");
             }
+            Console.WriteLine(sb.ToString());
         }
     }
 }

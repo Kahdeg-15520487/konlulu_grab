@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 
-using DiscordBot.Modules;
+using konlulu_grab.Modules;
 
 using Microsoft.Extensions.Logging;
 
@@ -11,11 +11,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DiscordBot
+namespace konlulu_grab
 {
     class CommandHandler
     {
-        private static readonly char COMMAND_PREFIX = '~';
+        public static readonly char COMMAND_PREFIX = '!';
 
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
@@ -29,6 +29,7 @@ namespace DiscordBot
             _client = client;
             this.serviceProvider = serviceProvider;
             logger = this.serviceProvider.GetService(typeof(ILogger<CommandHandler>)) as ILogger<CommandHandler>;
+            logger.LogInformation("Command prefix: " + COMMAND_PREFIX);
         }
 
         public async Task InstallCommandsAsync()
@@ -61,7 +62,7 @@ namespace DiscordBot
                 }
                 sb.AppendLine("-----");
 
-                if (module.Name == "KonLulu~")
+                if (module.Name == DiscordModule.MODULE_NAME)
                 {
                     help.AppendLine("```");
                     help.AppendLine(module.Name);
@@ -74,6 +75,16 @@ namespace DiscordBot
                     help.AppendLine("```");
                 }
                 DiscordModule.HELP_STRING = help.ToString();
+            }
+            logger.LogInformation(sb.ToString());
+        }
+
+        private async Task PrintCommands()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var cmd in _commands.Commands)
+            {
+                sb.AppendLine(cmd.Name);
             }
             logger.LogInformation(sb.ToString());
         }
@@ -96,12 +107,15 @@ namespace DiscordBot
             // Create a WebSocket-based command context based on the message
             SocketCommandContext context = new SocketCommandContext(_client, message);
             logger.LogInformation($"{message.Author.Id}|{message.Author.Username}: {message.Content}");
+            logger.LogInformation("argPos: " + argPos);
             // Execute the command with the command context we just
             // created, along with the service provider for precondition checks.
-            await _commands.ExecuteAsync(
-                context: context,
-                argPos: argPos,
-                services: this.serviceProvider);
+            await PrintCommands();
+            var result = await _commands.ExecuteAsync(
+                                context: context,
+                                argPos: argPos,
+                                services: this.serviceProvider);
+            logger.LogInformation(result.ToString());            
         }
     }
 }
